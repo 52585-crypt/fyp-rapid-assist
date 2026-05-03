@@ -42,6 +42,10 @@ const extraWorkItemSchema = new mongoose.Schema(
     title: { type: String, required: true, trim: true },
     description: { type: String, default: "", trim: true },
     amount: { type: Number, required: true, min: 0 },
+    proofImages: {
+      type: [requestImageSchema],
+      default: [],
+    },
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],
@@ -128,6 +132,12 @@ const serviceRequestSchema = new mongoose.Schema(
     extraWork: {
       type: [extraWorkItemSchema],
       default: [],
+    },
+
+    extraWorkRejectionReason: {
+      type: String,
+      default: "",
+      trim: true,
     },
 
     fuelAmount: { type: Number },

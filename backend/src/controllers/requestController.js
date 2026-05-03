@@ -34,6 +34,27 @@ const TOWING_SERVICE_TYPES = new Set(["vehicle_towing"]);
 
 const TERMINAL_CANCEL_STATUSES = new Set(["completed", "cancelled"]);
 
+function calculateApprovedExtraWorkTotal(extraWork) {
+  if (!Array.isArray(extraWork)) {
+    return 0;
+  }
+  return extraWork.reduce((sum, item) => {
+    if (!item || item.status !== "approved") {
+      return sum;
+    }
+    const amt = Number(item.amount);
+    return sum + (Number.isFinite(amt) ? amt : 0);
+  }, 0);
+}
+
+function recalculateMechanicTotalAmount(doc) {
+  const base = Number(doc.mechanicBaseFee) || 0;
+  const dist = Number(doc.mechanicDistanceFee) || 0;
+  const extra = calculateApprovedExtraWorkTotal(doc.extraWork);
+  doc.extraWorkTotal = extra;
+  doc.totalAmount = base + dist + extra;
+}
+
 function numOrNull(v) {
   if (v === undefined || v === null || v === "") return null;
   const n = Number(v);
@@ -498,6 +519,125 @@ async function getRequestById(req, res) {
   }
 }
 
+async function approveExtraWork(req, res) {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid request id." });
+    }
+
+    const doc = await ServiceRequest.findOne({
+      _id: id,
+      customer: req.user._id,
+    });
+
+    if (!doc) {
+      return res.status(404).json({ message: "Request not found." });
+    }
+
+    if (doc.serviceCategory !== "mechanic") {
+      return res.status(400).json({
+        message: "Extra work approval is only for mechanic requests.",
+      });
+    }
+
+    if (doc.status !== "extra_work_requested") {
+      return res.status(400).json({
+        message: "Request is not awaiting extra work approval.",
+      });
+    }
+
+    const pending = (doc.extraWork || []).filter((w) => w.status === "pending");
+    if (!pending.length) {
+      return res.status(400).json({
+        message: "No pending extra work items to approve.",
+      });
+    }
+
+    for (const item of doc.extraWork) {
+      if (item.status === "pending") {
+        item.status = "approved";
+      }
+    }
+
+    recalculateMechanicTotalAmount(doc);
+    doc.status = "extra_work_approved";
+    doc.extraWorkRejectionReason = "";
+
+    await doc.save();
+
+    return res.json({
+      message: "Extra work approved.",
+      request: doc.toObject(),
+    });
+  } catch (err) {
+    return res.status(500).json({
+      message: err.message || "Server error.",
+    });
+  }
+}
+
+async function rejectExtraWork(req, res) {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid request id." });
+    }
+
+    const doc = await ServiceRequest.findOne({
+      _id: id,
+      customer: req.user._id,
+    });
+
+    if (!doc) {
+      return res.status(404).json({ message: "Request not found." });
+    }
+
+    if (doc.serviceCategory !== "mechanic") {
+      return res.status(400).json({
+        message: "Extra work rejection is only for mechanic requests.",
+      });
+    }
+
+    if (doc.status !== "extra_work_requested") {
+      return res.status(400).json({
+        message: "Request is not awaiting extra work approval.",
+      });
+    }
+
+    const pending = (doc.extraWork || []).filter((w) => w.status === "pending");
+    if (!pending.length) {
+      return res.status(400).json({
+        message: "No pending extra work items to reject.",
+      });
+    }
+
+    for (const item of doc.extraWork) {
+      if (item.status === "pending") {
+        item.status = "rejected";
+      }
+    }
+
+    recalculateMechanicTotalAmount(doc);
+    doc.status = "extra_work_rejected";
+    const reasonRaw =
+      req.body?.reason ?? req.body?.rejectionReason ?? "";
+    doc.extraWorkRejectionReason =
+      typeof reasonRaw === "string" ? reasonRaw.trim() : "";
+
+    await doc.save();
+
+    return res.json({
+      message: "Extra work rejected.",
+      request: doc.toObject(),
+    });
+  } catch (err) {
+    return res.status(500).json({
+      message: err.message || "Server error.",
+    });
+  }
+}
+
 async function cancelRequest(req, res) {
   try {
     const { id } = req.params;
@@ -626,5 +766,8 @@ module.exports = {
   listMyRequests,
   getRequestById,
   cancelRequest,
+  approveExtraWork,
+  rejectExtraWork,
   patchCustomerImages,
+  calculateApprovedExtraWorkTotal,
 };

@@ -500,6 +500,8 @@ async function patchStartService(req, res) {
     let allowedFrom = [];
     if (job.serviceCategory === "mechanic") {
       allowedFrom = [
+        "provider_assigned",
+        "arrived",
         "inspection_started",
         "extra_work_approved",
         "extra_work_rejected",

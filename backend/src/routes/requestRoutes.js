@@ -11,6 +11,8 @@ const {
   listMyRequests,
   getRequestById,
   cancelRequest,
+  approveExtraWork,
+  rejectExtraWork,
   patchCustomerImages,
 } = require("../controllers/requestController");
 
@@ -23,6 +25,16 @@ router.post("/", customerAuth, createRequest);
 router.get("/my", customerAuth, listMyRequests);
 router.get("/:id", customerAuth, getRequestById);
 router.patch("/:id/cancel", customerAuth, cancelRequest);
+router.patch(
+  "/:id/approve-extra-work",
+  customerAuth,
+  approveExtraWork
+);
+router.patch(
+  "/:id/reject-extra-work",
+  customerAuth,
+  rejectExtraWork
+);
 router.patch(
   "/:id/customer-images",
   customerAuth,
