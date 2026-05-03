@@ -6,7 +6,7 @@ const cookieParser = require("cookie-parser");
 
 const authRoutes = require("./routes/authRoutes");
 const requestRoutes = require("./routes/requestRoutes");
-
+const providerRoutes = require("./routes/providerRoutes");
 const app = express();
 app.use(
   cors({
@@ -43,10 +43,10 @@ app.get("/", (_req, res) => {
       "/api/requests/:id",
       "/api/requests/:id/cancel",
       "/api/requests/:id/customer-images",
+      "/api/provider/*",
     ],
   });
-});
-app.get("/health", (_req, res) => {
+});app.get("/health", (_req, res) => {
   res.json({
     status: "OK",
   });
@@ -54,13 +54,14 @@ app.get("/health", (_req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/requests", requestRoutes);
+app.use("/api/provider", providerRoutes);
 
-app.use((req, res) => {  res.status(404).json({
+app.use((req, res) => {
+  res.status(404).json({
     error: "Not Found",
     path: req.path,
   });
 });
-
 app.use((err, _req, res, _next) => {
   // eslint-disable-next-line no-console
   console.error(err);

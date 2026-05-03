@@ -48,6 +48,7 @@ const upload = multer({
 });
 
 const uploadCustomerImages = upload.array("images", 5);
+const uploadProofImages = upload.array("images", 5);
 
 function handleMulterError(err, req, res, next) {
   if (err instanceof multer.MulterError) {
@@ -75,6 +76,7 @@ function handleMulterError(err, req, res, next) {
 
 module.exports = {
   uploadCustomerImages,
+  uploadProofImages,
   handleMulterError,
   REQUEST_UPLOAD_RELATIVE_DIR: "/uploads/requests",
 };
