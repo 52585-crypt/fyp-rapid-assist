@@ -37,12 +37,33 @@ const requestImageSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const extraWorkItemSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true, trim: true },
+    description: { type: String, default: "", trim: true },
+    amount: { type: Number, required: true, min: 0 },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+  },
+  { _id: true }
+);
+
 const serviceRequestSchema = new mongoose.Schema(
   {
     customer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
+    },
+
+    provider: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
       index: true,
     },
 
@@ -104,6 +125,11 @@ const serviceRequestSchema = new mongoose.Schema(
     mechanicDistanceFee: { type: Number },
     extraWorkTotal: { type: Number, default: 0 },
 
+    extraWork: {
+      type: [extraWorkItemSchema],
+      default: [],
+    },
+
     fuelAmount: { type: Number },
     fuelDeliveryFee: { type: Number },
 
@@ -140,6 +166,11 @@ const serviceRequestSchema = new mongoose.Schema(
 
     cancellationReason: { type: String, default: "", trim: true },
     cancelledAt: { type: Date, default: null },
+
+    acceptedAt: { type: Date, default: null },
+    onTheWayAt: { type: Date, default: null },
+    arrivedAt: { type: Date, default: null },
+    completedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

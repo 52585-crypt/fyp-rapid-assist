@@ -109,6 +109,33 @@ const userSchema = new mongoose.Schema(
       },
     },
 
+    serviceArea: {
+      address: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      city: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      lat: {
+        type: Number,
+        default: null,
+      },
+      lng: {
+        type: Number,
+        default: null,
+      },
+      radiusKm: {
+        type: Number,
+        default: 5,
+        min: 0.5,
+        max: 200,
+      },
+    },
+
     isCertified: {
       type: Boolean,
       default: false,
@@ -213,6 +240,7 @@ userSchema.pre("validate", function () {
     this.isAvailable = false;
     this.providerProfile = undefined;
     this.verificationDocs = undefined;
+    this.serviceArea = undefined;
   }
 
   if (this.role === "provider" && !this.providerType) {
