@@ -7,7 +7,10 @@ const cookieParser = require("cookie-parser");
 const authRoutes = require("./routes/authRoutes");
 const requestRoutes = require("./routes/requestRoutes");
 const providerRoutes = require("./routes/providerRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
+
 const app = express();
+
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN === "*" ? true : process.env.CORS_ORIGIN,
@@ -44,9 +47,14 @@ app.get("/", (_req, res) => {
       "/api/requests/:id/cancel",
       "/api/requests/:id/customer-images",
       "/api/provider/*",
+      "/api/reviews",
+      "/api/reviews/my",
+      "/api/reviews/provider/:providerId",
     ],
   });
-});app.get("/health", (_req, res) => {
+});
+
+app.get("/health", (_req, res) => {
   res.json({
     status: "OK",
   });
@@ -55,6 +63,7 @@ app.get("/", (_req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/provider", providerRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 app.use((req, res) => {
   res.status(404).json({

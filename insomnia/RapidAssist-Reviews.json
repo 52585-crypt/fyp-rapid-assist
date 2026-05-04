@@ -1,0 +1,132 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-05-04T00:00:00.000Z",
+  "__export_source": "rapid-assist.review-module",
+  "resources": [
+    {
+      "_id": "wrk_ra_reviews_01",
+      "parentId": null,
+      "_type": "workspace",
+      "name": "Rapid Assist — Reviews",
+      "description": "Review module APIs. Pehle login karke `access_token` environment mein set karein (customer token POST /my aur POST / ke liye).",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_ra_reviews_base",
+      "parentId": "wrk_ra_reviews_01",
+      "_type": "environment",
+      "name": "Base",
+      "data": {
+        "base_url": "http://localhost:5000",
+        "access_token": "",
+        "provider_id": "REPLACE_WITH_PROVIDER_MONGODB_ID",
+        "request_id": "REPLACE_WITH_COMPLETED_REQUEST_ID"
+      },
+      "dataPropertyOrder": {
+        "&": ["base_url", "access_token", "provider_id", "request_id"]
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": -1
+    },
+    {
+      "_id": "fld_ra_reviews_api",
+      "parentId": "wrk_ra_reviews_01",
+      "_type": "request_group",
+      "name": "Reviews",
+      "description": "POST / customer only. GET /my customer. GET /provider/:id koi bhi authenticated user.",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1000
+    },
+    {
+      "_id": "req_ra_review_create",
+      "parentId": "fld_ra_reviews_api",
+      "_type": "request",
+      "name": "Create review (customer)",
+      "description": "Completed service request par ek dafa review. Body: requestId, rating 1–5, optional comment, optional isHelpful.",
+      "url": "{{ _.base_url }}/api/reviews",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"requestId\": \"{{ _.request_id }}\",\n  \"rating\": 5,\n  \"comment\": \"Bahut achha kaam.\",\n  \"isHelpful\": true\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "id": "hdr_ra_json",
+          "disabled": false
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.access_token }}",
+        "disabled": false,
+        "prefix": ""
+      },
+      "metaSortKey": -3000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestUrl": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_ra_review_my",
+      "parentId": "fld_ra_reviews_api",
+      "_type": "request",
+      "name": "My reviews (customer)",
+      "description": "Logged-in customer ke saare reviews, newest first.",
+      "url": "{{ _.base_url }}/api/reviews/my",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.access_token }}",
+        "disabled": false,
+        "prefix": ""
+      },
+      "metaSortKey": -2000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestUrl": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_ra_review_provider",
+      "parentId": "fld_ra_reviews_api",
+      "_type": "request",
+      "name": "Provider reviews (any auth)",
+      "description": "Kisi provider ki public-style list + ratingSummary.",
+      "url": "{{ _.base_url }}/api/reviews/provider/{{ _.provider_id }}",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.access_token }}",
+        "disabled": false,
+        "prefix": ""
+      },
+      "metaSortKey": -1000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestUrl": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    }
+  ]
+}
