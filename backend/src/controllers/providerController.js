@@ -3,6 +3,11 @@ const path = require("path");
 const mongoose = require("mongoose");
 const User = require("../models/User");
 const ServiceRequest = require("../models/ServiceRequest");
+const Payment = require("../models/Payment");
+const {
+  getRequestAmount,
+  normalizeStoredPaymentMethod,
+} = require("./paymentController");
 const { calculateDistanceKm, isValidLatLng } = require("../utils/locationUtils");
 const { REQUEST_UPLOAD_RELATIVE_DIR } = require("../middleware/uploadMiddleware");
 
@@ -632,11 +637,55 @@ async function patchComplete(req, res) {
       });
     }
 
+    const methodNorm = normalizeStoredPaymentMethod(job.paymentMethod);
+
+    if (methodNorm === "online" && job.paymentStatus !== "paid") {
+      return res.status(400).json({
+        message: "Online payment must be paid before completing the job.",
+      });
+    }
+
+    const amount = getRequestAmount(job);
+
+    if (methodNorm === "cod") {
+      job.paymentStatus = "paid";
+      job.paymentMethod = "cod";
+
+      let codPayment = await Payment.findOne({
+        request: job._id,
+        paymentStatus: "pending",
+        paymentMethod: "cod",
+      });
+
+      if (codPayment) {
+        codPayment.paymentStatus = "paid";
+        codPayment.gateway = "cod";
+        codPayment.transactionId = `COD-${Date.now()}`;
+        codPayment.paidAt = new Date();
+        codPayment.failedAt = null;
+        codPayment.failureReason = "";
+        codPayment.notes = "Cash collected by provider.";
+        codPayment.amount = amount;
+        codPayment.provider = job.provider || codPayment.provider;
+        await codPayment.save();
+      } else {
+        await Payment.create({
+          request: job._id,
+          customer: job.customer,
+          provider: job.provider,
+          amount,
+          paymentMethod: "cod",
+          gateway: "cod",
+          paymentStatus: "paid",
+          transactionId: `COD-${Date.now()}`,
+          paidAt: new Date(),
+          notes: "Cash collected by provider.",
+        });
+      }
+    }
+
     job.status = "completed";
     job.completedAt = new Date();
-    if (job.paymentMethod === "cash") {
-      job.paymentStatus = "paid";
-    }
 
     await job.save();
 

@@ -18,7 +18,10 @@ const REQUEST_STATUSES = [
   "cancelled",
 ];
 
-const PAYMENT_METHODS = ["cash", "online", "wallet"];
+/** Stored on documents; legacy "cash" / "wallet" kept for existing DB rows. */
+const PAYMENT_METHODS_STORABLE = ["cod", "online", "cash", "wallet"];
+/** Allowed on new API creates (estimate + create request). */
+const PAYMENT_METHODS = ["cod", "online"];
 const PAYMENT_STATUSES = ["pending", "paid", "failed", "refunded"];
 
 const VEHICLE_CATEGORIES = ["bike", "car", "van", "truck", "other"];
@@ -149,6 +152,11 @@ const serviceRequestSchema = new mongoose.Schema(
 
     totalAmount: { type: Number, required: true, min: 0 },
 
+    pricing: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
+
     status: {
       type: String,
       enum: REQUEST_STATUSES,
@@ -157,7 +165,7 @@ const serviceRequestSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-      enum: PAYMENT_METHODS,
+      enum: PAYMENT_METHODS_STORABLE,
       required: true,
     },
 
@@ -191,5 +199,6 @@ module.exports = ServiceRequest;
 module.exports.SERVICE_CATEGORIES = SERVICE_CATEGORIES;
 module.exports.REQUEST_STATUSES = REQUEST_STATUSES;
 module.exports.PAYMENT_METHODS = PAYMENT_METHODS;
+module.exports.PAYMENT_METHODS_STORABLE = PAYMENT_METHODS_STORABLE;
 module.exports.VEHICLE_CATEGORIES = VEHICLE_CATEGORIES;
 module.exports.VEHICLE_FUEL_TYPES = VEHICLE_FUEL_TYPES;

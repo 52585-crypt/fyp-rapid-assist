@@ -147,7 +147,7 @@ function validateCommon(body) {
   if (!body.paymentMethod) {
     errors.push("paymentMethod is required.");
   } else if (!PAYMENT_METHODS.includes(body.paymentMethod)) {
-    errors.push("paymentMethod must be cash, online, or wallet.");
+    errors.push("paymentMethod must be cod or online.");
   }
 
   const vehicle = normalizeVehicleInfo(body);

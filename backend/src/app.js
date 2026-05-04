@@ -8,6 +8,7 @@ const authRoutes = require("./routes/authRoutes");
 const requestRoutes = require("./routes/requestRoutes");
 const providerRoutes = require("./routes/providerRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 
 const app = express();
 
@@ -50,6 +51,12 @@ app.get("/", (_req, res) => {
       "/api/reviews",
       "/api/reviews/my",
       "/api/reviews/provider/:providerId",
+      "/api/payments/my",
+      "/api/payments/request/:requestId/summary",
+      "/api/payments/request/:requestId/initiate",
+      "/api/payments/:paymentId/success",
+      "/api/payments/:paymentId/failed",
+      "/api/payments/:paymentId",
     ],
   });
 });
@@ -64,6 +71,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/provider", providerRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/payments", paymentRoutes);
 
 app.use((req, res) => {
   res.status(404).json({
